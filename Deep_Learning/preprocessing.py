@@ -31,7 +31,7 @@ def process_time_data(df):
     
     # time_diff 값을 로그 변환하여 스케일 조정
     df['time_diff'] = np.log1p(df['time_diff'])
-
+    
     # time_diff의 다양한 단위 변환 추가
     df['time_diff_minutes'] = df['time_diff'] / 60
     df['time_diff_hours'] = df['time_diff'] / 3600
@@ -50,11 +50,11 @@ def process_time_data(df):
     df['day_sin'] = np.sin(2 * np.pi * df['day'] / 31)
     df['day_cos'] = np.cos(2 * np.pi * df['day'] / 31)
     
-    # event_time, year, month, day, hour 컬럼 삭제 (불필요한 원본 값)
+    # 불필요한 원본 값 삭제
     df = df.drop(columns=['event_time', 'year', 'month', 'day', 'hour'], errors='ignore')
     return df
 
-# 3. Label Encoding
+# 3. 인코딩
 def encode_categorical_data(df):
     # hub_type, event_type 라벨 인코딩
     le_hub = LabelEncoder()
@@ -68,31 +68,29 @@ def encode_categorical_data(df):
 
     # 허브 이동 횟수 추가 (허브 변경 감지)
     df['hub_transition'] = (df['hub_type_encoded'] != df['hub_type_encoded'].shift(1)).astype(int)
-
-    df = df.drop(columns=['product_serial', 'product_name'])
-    df = df.drop(columns=['hub_type', 'event_type'], errors='ignore')
-
+    
+    # 원본 hub_type과 event_type 삭제 (인코딩 후 불필요)
+    df = df.drop(columns=['hub_type', 'event_type', 'product_serial', 'product_name'], errors='ignore')
+    
     return df
 
 # 4. 시계열 데이터 구성
 def create_sequences(df, seq_length):
     sequences = []
     for _, group in df.groupby('epc_code'):
-        group_data = group[['time_diff', 'time_diff_minutes', 'time_diff_hours', 'time_diff_days', 'hour_sin', 'hour_cos', 'month_sin', 'month_cos', 
-                            'day_sin', 'day_cos', 'hub_type_encoded', 'event_type_encoded', 'hub_type_shifted', 'event_type_shifted', 'hub_transition']].values
-        for i in range(len(group_data) - seq_length + 1):
+        group_data = group[["time_diff_minutes", "hub_transition", "event_type_shifted", "hub_type_encoded", "event_type_encoded", "hour_sin", "month_sin"]].values
+        for i in range(0, len(group_data) - seq_length + 1, seq_length):
             sequences.append(group_data[i:i + seq_length])
     return np.array(sequences)
 
+
 # 5. 데이터 정규화
 def normalize_data(sequences):
-    # MinMaxScaler를 사용할 열들 (시간 차이 관련 변수)
     minmax_scaler = MinMaxScaler()
-    minmax_indices = [0, 1, 2, 3]  # time_diff, time_diff_minutes, time_diff_hours, time_diff_days
+    minmax_indices = [0]  # time_diff 관련 열
 
-    # StandardScaler를 사용할 열들 (주기적 시간 변수)
     standard_scaler = StandardScaler()
-    standard_indices = [4, 5, 6, 7, 8, 9]  # hour_sin, hour_cos, month_sin, month_cos, day_sin, day_cos
+    standard_indices = [5, 6]  # 시간 주기적 변수
 
     # MinMaxScaler 적용
     sequences[:, :, minmax_indices] = minmax_scaler.fit_transform(
@@ -103,8 +101,6 @@ def normalize_data(sequences):
     sequences[:, :, standard_indices] = standard_scaler.fit_transform(
         sequences[:, :, standard_indices].reshape(-1, len(standard_indices))
     ).reshape(sequences.shape[0], sequences.shape[1], len(standard_indices))
-
-    # hub_type_encoded, event_type_encoded 등 범주형 변수는 정규화 제외
 
     return sequences
 
@@ -118,7 +114,7 @@ def preprocess_pipeline(file_path, seq_length=10):
     df = load_data(file_path)
     df = process_time_data(df)
     df = encode_categorical_data(df)
-    df = df.drop(columns=['product_serial', 'product_name'], errors='ignore')
     sequences = create_sequences(df, seq_length)
     sequences = normalize_data(sequences)
-    return sequences
+    X_train, X_val, X_test = split_data(sequences)
+    return X_train, X_val, X_test

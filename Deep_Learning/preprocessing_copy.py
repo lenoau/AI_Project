@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import LabelEncoder, MinMaxScaler, StandardScaler
+import networkx as nx
+from sklearn.preprocessing import LabelEncoder, MinMaxScaler, StandardScaler, OneHotEncoder
 from sklearn.model_selection import train_test_split
 import tensorflow as tf
 from tensorflow.keras import layers, models
@@ -8,6 +9,7 @@ import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from spektral.layers import GCNConv
 
 file_path = "./이상치데이터예제.csv"
 
@@ -28,28 +30,25 @@ def process_time_data(df):
     df['hour'] = df['event_time'].dt.hour
     df['hour_sin'] = np.sin(2 * np.pi * df['hour'] / 24)
     df['hour_cos'] = np.cos(2 * np.pi * df['hour'] / 24)
+    df = df.drop(columns=['event_time'])
     return df
 
 # 3. Label Encoding
 def encode_categorical_data(df):
-    # hub_type, event_type 라벨 인코딩
-    le_hub = LabelEncoder()
-    le_event = LabelEncoder()
-    df['hub_type_encoded'] = le_hub.fit_transform(df['hub_type'])
-    df['event_type_encoded'] = le_event.fit_transform(df['event_type'])
-
-    # hub_event_combined 생성 후 인코딩
-    df['hub_event_combined'] = df['hub_type'] + '_' + df['event_type']
-    le_combined = LabelEncoder()
-    df['hub_event_encoded'] = le_combined.fit_transform(df['hub_event_combined'])
-
+    encoder = OneHotEncoder(sparse_output=False)
+    hub_encoded = encoder.fit_transform(df[['hub_type']])
+    event_encoded = encoder.fit_transform(df[['event_type']])
+    df = df.drop(columns=['hub_type', 'event_type'])
+    df = pd.concat([df, pd.DataFrame(hub_encoded, columns=[f'hub_{i}' for i in range(hub_encoded.shape[1])]), 
+                        pd.DataFrame(event_encoded, columns=[f'event_{i}' for i in range(event_encoded.shape[1])])], axis=1)
     return df
 
 # 4. 시계열 데이터 구성
 def create_sequences(df, seq_length):
     sequences = []
+    feature_columns = [col for col in df.columns if col not in ['epc_code']]  # epc_code 제외
     for _, group in df.groupby('epc_code'):
-        group_data = group[['time_diff', 'hub_type_encoded', 'event_type_encoded', 'hub_event_encoded']].values
+        group_data = group[feature_columns].values  # 기존 컬럼 대신 One-Hot 포함 전체 컬럼 사용
         for i in range(len(group_data) - seq_length + 1):
             sequences.append(group_data[i:i + seq_length])
     return np.array(sequences)
@@ -71,7 +70,8 @@ def preprocess_pipeline(file_path, seq_length=10):
     df = load_data(file_path)
     df = process_time_data(df)
     df = encode_categorical_data(df)
-    df = df.drop(columns=['product_serial', 'product_name'], errors='ignore')
+    df = df.drop(columns=['product_serial', 'product_name'])
     sequences = create_sequences(df, seq_length)
     sequences = normalize_data(sequences)
-    return sequences
+    X_train, X_val, X_test = split_data(sequences)
+    return X_train, X_val, X_test
