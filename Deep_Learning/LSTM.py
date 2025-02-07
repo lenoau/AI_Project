@@ -17,8 +17,35 @@ app = FastAPI()
 
 # 1. 저장된 모델과 임계치 불러오기
 loaded_model = load_model('./LSTM_결과/임계치_0.4864.h5', custom_objects={'mae': tf.keras.losses.MeanSquaredError()})
+loaded_model.compile()
 with open('./LSTM_결과/임계치_0.4864.pkl', 'rb') as f:
     threshold = pickle.load(f)
+
+# LabelEncoder 불러오기기
+with open('./LSTM_결과/event_type_encoder.pkl', 'rb') as f:
+    le_event = pickle.load(f)
+
+with open('./LSTM_결과/hub_type_encoder.pkl', 'rb') as f:
+    le_hub = pickle.load(f)
+
+# MinMaxScaler 불러오기기
+with open('./LSTM_결과/scaler.pkl', 'rb') as f:
+    scaler = pickle.load(f)
+
+# 새로운 Label 처리
+def safe_transform(le, values):
+    # LabelEncoder에 없는 새로운 값 찾기
+    unknown_values = set(values) - set(le.classes_)
+    
+    # 새로운 값이 있으면 LabelEncoder 클래스에 추가
+    if unknown_values:
+        print(f"Warning: 새로운 값 발견 {unknown_values}. 새로운 라벨로 추가합니다.")
+        le.classes_ = np.append(le.classes_, list(unknown_values))
+    else:
+        print("새로운 값이 없습니다. 기존 클래스만 변환합니다.")
+
+    return le.transform(values)
+
 print("불러온 임계치:", threshold)
 
 # 2. Pydantic 모델 정의 (입력 및 출력 스키마)
@@ -73,17 +100,13 @@ def predict(events: List[EventRecord]):
     
     # (4) 범주형 변수 인코딩 (학습 시 사용한 인코더로 변환)
     # 만약 입력 데이터에 학습 시 정의되지 않은 카테고리가 있다면 에러가 발생할 수 있음
-    # 학습 데이터로 LabelEncoder 학습
-    le_event = LabelEncoder()
-    df['event_type_enc'] = le_event.fit_transform(df['event_type'])
-
-    # 허브 타입(hub_type) 인코딩
-    le_hub = LabelEncoder()
-    df['hub_type_enc'] = le_hub.fit_transform(df['hub_type'])
+    
+    # 범주형 변수 인코딩
+    df['event_type_enc'] = safe_transform(le_event, df['event_type'])
+    df['hub_type_enc'] = safe_transform(le_hub, df['hub_type'])
         
-    # (5) 수치형 변수 정규화 (time_delta)
-    scaler = MinMaxScaler()
-    df['time_delta_scaled'] = scaler.fit_transform(df[['time_delta']])
+    # 수치형 변수 정규화
+    df['time_delta_scaled'] = scaler.transform(df[['time_delta']])
     
     print("전처리 후 데이터 샘플:")
     print(df[['epc_code', 'product_serial', 'event_time', 'time_delta', 
