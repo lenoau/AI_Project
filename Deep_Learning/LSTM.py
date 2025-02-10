@@ -11,6 +11,7 @@ from tensorflow.keras.models import load_model
 import uvicorn
 
 # python -m uvicorn LSTM:app --reload
+# python -m uvicorn LSTM:app --host 0.0.0.0 --port 8000 --reload
 
 # FastAPI 앱 생성
 app = FastAPI()
@@ -80,7 +81,7 @@ def create_sequence(group: pd.DataFrame, max_seq_length: int, feature_columns: L
     return seq
 
 # 3. FastAPI 엔드포인트: /predict
-@app.post("/predict", response_model=PredictionResponse)
+@app.post("/detect_anomaly", response_model=PredictionResponse)
 def predict(events: List[EventRecord]):
     
     # SpringBoot에서 JSON 형식으로 전달한 이벤트 데이터를 받아서
@@ -147,4 +148,4 @@ def predict(events: List[EventRecord]):
 # 4. FastAPI 서버 실행
 @app.get("/")
 async def read_root():
-    return {"message": "LSTM프로젝트"}
+    return {"message": "LSTM모델"}
