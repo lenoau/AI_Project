@@ -2,7 +2,7 @@ import pandas as pd
 import os
 
 # CSV 파일 로드
-file_path = "D:\코딩\Python\AI\AI_Project\Deep_Learning\Data\Dummy_02.csv"  # 실제 파일 경로로 변경 필요
+file_path = "D:\코딩\Python\AI\AI_Project\Deep_Learning\Data\실험데이터_이상_31.csv"
 df = pd.read_csv(file_path)
 
 if os.path.exists(file_path):
