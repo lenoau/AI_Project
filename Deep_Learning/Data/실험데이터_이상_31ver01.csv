@@ -123,9 +123,9 @@ epc_code,product_serial,product_name,hub_type,event_type,event_time,Detect
 001.8805843.584374.000000157,157,Product 1,Yeongju,WMS_inbound,2025-02-06 19:00,
 001.8805843.584374.000000157,157,Product 1,Yeongju,WMS_outbound,2025-02-11 1:26,
 001.8805843.584374.000000157,157,Product 1,Gwangju_donggu,stock_inbound(HUB),2025-02-11 3:10,
-001.8805843.584374.000000157,157,Product 1,Gwangju_donggu,stock_outbound(HUB),2025-03-04 22:12,LSTM 오류 감지
+001.8805843.584374.000000157,157,Product 1,Gwangju_donggu,stock_outbound(HUB),2025-03-04 10:12,LSTM 오류 감지
 001.8805843.584374.000000157,157,Product 1,Gwangju_junggu,stock_inbound(Wholesaler),2025-03-04 16:33,
-001.8805843.584374.000000157,157,Product 1,Gwangju_junggu,stock_outbound(Wholesaler),2025-03-30 13:40,
+001.8805843.584374.000000157,157,Product 1,Gwangju_junggu,stock_outbound(Wholesaler),2025-04-12 13:40,
 001.8805843.584374.000000157,157,Product 1,Gwangju_bukgu,stock_inbound(Reseller),2025-04-10 22:43,
 001.8805843.584374.000000157,157,Product 1,Gwangju_bukgu,stock_outbound(Sell),2025-04-30 17:41,
 001.8805843.584374.000000158,158,Product 1,Yeongju,commissioning,2025-01-21 17:54,
@@ -139,10 +139,10 @@ epc_code,product_serial,product_name,hub_type,event_type,event_time,Detect
 001.8805843.584374.000000158,158,Product 1,Seoul_bukgu,stock_inbound(Reseller),2025-03-14 3:54,
 001.8805843.584374.000000158,158,Product 1,Seoul_bukgu,stock_outbound(Sell),2025-04-12 18:21,
 001.8805843.584374.000000159,159,Product 1,Yeongju,commissioning,2025-01-21 17:54,
-001.8805843.584374.000000159,159,Product 1,Yeongju,aggregation,2025-01-21 18:01,
+001.8805843.584374.000000159,159,Product 1,Yeongju,aggregation,2025-01-31 18:01,LSTM 오류 감지
 001.8805843.584374.000000159,159,Product 1,Yeongju,WMS_inbound,2025-01-22 18:50,
 001.8805843.584374.000000159,159,Product 1,Yeongju,WMS_outbound,2025-02-19 19:45,
-001.8805843.584374.000000159,159,Product 1,Seoul_donggu,stock_inbound(HUB),2025-02-19 23:02,LSTM 오류 감지
+001.8805843.584374.000000159,159,Product 1,Seoul_donggu,stock_inbound(HUB),2025-02-19 23:02,
 001.8805843.584374.000000159,159,Product 1,Seoul_donggu,stock_outbound(HUB),2025-02-20 22:22,
 001.8805843.584374.000000159,159,Product 1,Seoul_junggu,stock_inbound(Wholesaler),2025-03-19 7:04,
 001.8805843.584374.000000159,159,Product 1,Seoul_junggu,stock_outbound(Wholesaler),2025-03-15 12:35,

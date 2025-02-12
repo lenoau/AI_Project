@@ -17,20 +17,20 @@ import uvicorn
 app = FastAPI()
 
 # 1. 저장된 모델과 임계치 불러오기
-loaded_model = load_model('./LSTM_결과/임계치_0.4864.h5', custom_objects={'mae': tf.keras.losses.MeanSquaredError()})
+loaded_model = load_model('./LSTM_결과/임계치_0.3336_2.h5', custom_objects={'mse': tf.keras.losses.MeanSquaredError()})
 loaded_model.compile()
-with open('./LSTM_결과/임계치_0.4864.pkl', 'rb') as f:
+with open('./LSTM_결과/임계치_0.3336_2.pkl', 'rb') as f:
     threshold = pickle.load(f)
 
 # LabelEncoder 불러오기기
-with open('./LSTM_결과/event_type_encoder.pkl', 'rb') as f:
+with open('./LSTM_결과/event_type_encoder2.pkl', 'rb') as f:
     le_event = pickle.load(f)
 
-with open('./LSTM_결과/hub_type_encoder.pkl', 'rb') as f:
+with open('./LSTM_결과/hub_type_encoder2.pkl', 'rb') as f:
     le_hub = pickle.load(f)
 
 # MinMaxScaler 불러오기기
-with open('./LSTM_결과/scaler.pkl', 'rb') as f:
+with open('./LSTM_결과/scaler2.pkl', 'rb') as f:
     scaler = pickle.load(f)
 
 # 새로운 Label 처리
